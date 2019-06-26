@@ -71,12 +71,25 @@ public class MainActivity extends AppCompatActivity {
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
 
-            // custom drawing code here
             Paint paint = new Paint();
-            paint.setStyle(Paint.Style.FILL);
 
-            // make the entire canvas white
-            paint.setColor(Color.WHITE);
+            // TODO: Measure the actual screen size and draw accordingly
+            // TODO: Map elements and transformations using android.graphics.Path
+            /*
+                // Path transformation example
+                Path oval = new Path();
+                Matrix matrix = new Matrix();
+                RectF ovalRect = new RectF(width / OVAL_FACTOR, 0, width - (width / OVAL_FACTOR), height);
+
+                oval.addOval(ovalRect, Path.Direction.CW);
+                matrix.postRotate(ROTATION, width / 2, height / 2);
+                oval.transform(matrix, oval);
+                canvas.drawPath(oval, paint);
+             */
+
+            // clear the whole canvas
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(Color.BLACK);
             canvas.drawPaint(paint);
 
             // draw blue circle with anti aliasing turned on
