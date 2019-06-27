@@ -25,25 +25,15 @@ class SituationModel {
     private Handler tickingHandler = new Handler();
     private boolean isTicking = false;
     private View canvasView; // The view which the situation model should invalidate when a redraw is needed
+    private MapGrid mapGrid = new MapGrid(256f,512f,45f);
 
     private Runnable tick = new Runnable() {
         public void run() {
 
-            // Do whatever to see that the timing works
-            if (scaleGoingUp) {
-                boxScale += boxScaleSpeed*dt;
-                if (boxScale > 1) {
-                    boxScale = 1;
-                    scaleGoingUp = false;
-                }
-            }
-            else {
-                boxScale -= boxScaleSpeed*dt;
-                if (boxScale < 0) {
-                    boxScale = 0;
-                    scaleGoingUp = true;
-                }
-            }
+            mapGrid.orientation += 15f*dt;
+
+            // Check if any drawable things have been created or removed since last tick
+            DrawableThing.updateInstanceLists();
 
             // Schedule a redraw for the associated view
             canvasView.invalidate();

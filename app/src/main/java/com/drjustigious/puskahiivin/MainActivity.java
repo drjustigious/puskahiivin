@@ -3,6 +3,7 @@ package com.drjustigious.puskahiivin;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
@@ -16,6 +17,7 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static Context appContext;
     private CanvasView canvasView;
     private ConstraintLayout mainContentLayout;
     private SituationModel situationModel;
@@ -24,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        appContext = getApplicationContext();
 
         // Construct and enter the main view
         setContentView(R.layout.activity_main);
@@ -92,11 +95,16 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    protected static Context getAppContext() {
+        return appContext;
+    }
+
 
 
     private class CanvasView extends View {
 
         private int viewWidth, viewHeight;
+        private Matrix drawingTransform = new Matrix();
 
         CanvasView(Context context) {
             super(context);
@@ -132,9 +140,20 @@ public class MainActivity extends AppCompatActivity {
             paint.setColor(Color.BLACK);
             canvas.drawPaint(paint);
 
+            canvas.save();
+
             // draw some test shapes
-            paint.setColor(Color.RED);
-            canvas.drawRect(0, 0, viewWidth*situationModel.boxScale, viewHeight*situationModel.boxScale, paint);
+            //paint.setColor(Color.RED);
+            //canvas.drawRect(0, 0, viewWidth*situationModel.boxScale, viewHeight*situationModel.boxScale, paint);
+
+            // Modeled physical things and other drawables
+            for (DrawableThing thing : DrawableThing.listInstances) {
+                canvas.scale(2f,2f);
+                canvas.translate(thing.x, thing.y);
+                canvas.rotate(thing.orientation);
+                thing.draw(paint, canvas);
+                canvas.restore();
+            }
 
             paint.setStyle(Paint.Style.FILL);
             paint.setColor(Color.GRAY);
