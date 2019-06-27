@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -17,15 +16,23 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
 
+    private CanvasView canvasView;
+    private ConstraintLayout mainContentLayout;
+    private SituationModel situationModel;
+    private Paint paint;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Construct and enter the main view
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        ConstraintLayout mainContentLayout = findViewById(R.id.mainContentLayout);
-        mainContentLayout.addView(new CanvasView(this));
+        canvasView = new CanvasView(this);
+        mainContentLayout = findViewById(R.id.mainContentLayout);
+        mainContentLayout.addView(canvasView);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -35,6 +42,15 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
+
+        // Initialize the drawing utilities
+        paint = new Paint();
+        paint.setAntiAlias(true);
+
+
+        // Initialize the situation model
+        situationModel = new SituationModel(canvasView);
     }
 
     @Override
@@ -71,8 +87,6 @@ public class MainActivity extends AppCompatActivity {
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
 
-            Paint paint = new Paint();
-
             // TODO: Measure the actual screen size and draw accordingly
             // TODO: Map elements and transformations using android.graphics.Path
             /*
@@ -92,23 +106,14 @@ public class MainActivity extends AppCompatActivity {
             paint.setColor(Color.BLACK);
             canvas.drawPaint(paint);
 
-            // draw blue circle with anti aliasing turned on
-            paint.setAntiAlias(true);
-            paint.setColor(Color.BLUE);
-            canvas.drawCircle(initX, initY, radius, paint);
-
-            // draw red rectangle with anti aliasing turned off
-            paint.setAntiAlias(true);
+            // draw some test shapes
             paint.setColor(Color.RED);
-            canvas.drawRect(initX, initY + 300, rectWidth + radius, initY + rectHeight , paint);
+            canvas.drawRect(initX, initY, initX+rectWidth*situationModel.boxScale, initY+rectHeight*situationModel.boxScale, paint);
 
             paint.setStyle(Paint.Style.FILL);
-            paint.setColor(Color.GREEN);
+            paint.setColor(Color.GRAY);
             paint.setTextSize(40);
-            canvas.drawText("CoderzHeaven, Heaven of all working codes", initX, initY + 600, paint);
-
-            //if (Build.VERSION.SDK_INT != Build.VERSION_CODES.M)
-            //    canvas.restore();
+            canvas.drawText("Testing...", initX, initY + 600, paint);
         }
     }
 }
