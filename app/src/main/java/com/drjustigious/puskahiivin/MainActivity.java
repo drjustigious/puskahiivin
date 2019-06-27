@@ -53,6 +53,23 @@ public class MainActivity extends AppCompatActivity {
         situationModel = new SituationModel(canvasView);
     }
 
+
+    @Override
+    protected void onStop() {
+        // The activity loses focus
+        super.onStop();
+        situationModel.stopTicking();
+    }
+
+
+    @Override
+    protected void onStart() {
+        // The activity (re)gains focus
+        super.onStart();
+        situationModel.startTicking();
+    }
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -75,12 +92,21 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
+
     private class CanvasView extends View {
 
-        int initX = 200, initY = 200, radius = 100, rectWidth = 500, rectHeight = 400;
+        private int viewWidth, viewHeight;
 
-        public CanvasView(Context context) {
+        CanvasView(Context context) {
             super(context);
+        }
+
+        @Override
+        protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+            super.onSizeChanged(w, h, oldw, oldh);
+            this.viewWidth = w;
+            this.viewHeight = h;
         }
 
         @Override
@@ -108,12 +134,12 @@ public class MainActivity extends AppCompatActivity {
 
             // draw some test shapes
             paint.setColor(Color.RED);
-            canvas.drawRect(initX, initY, initX+rectWidth*situationModel.boxScale, initY+rectHeight*situationModel.boxScale, paint);
+            canvas.drawRect(0, 0, viewWidth*situationModel.boxScale, viewHeight*situationModel.boxScale, paint);
 
             paint.setStyle(Paint.Style.FILL);
             paint.setColor(Color.GRAY);
             paint.setTextSize(40);
-            canvas.drawText("Testing...", initX, initY + 600, paint);
+            canvas.drawText("Testing...", 128, 512, paint);
         }
     }
 }
