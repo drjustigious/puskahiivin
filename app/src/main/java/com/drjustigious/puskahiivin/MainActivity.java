@@ -1,6 +1,8 @@
 package com.drjustigious.puskahiivin;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -9,6 +11,7 @@ import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -17,16 +20,23 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int REQUEST_ALL_PERMISSIONS = 1;
+
     private static Context appContext;
     private CanvasView canvasView;
     private ConstraintLayout mainContentLayout;
     private SituationModel situationModel;
+    private LocationTracker locationTracker;
     private Paint paint;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         appContext = getApplicationContext();
+
+
+        // Check and, if necessary, ask for required system resource permissions
+        checkPermissions();
 
         // Construct and enter the main view
         setContentView(R.layout.activity_main);
@@ -51,9 +61,34 @@ public class MainActivity extends AppCompatActivity {
         paint = new Paint();
         paint.setAntiAlias(true);
 
+        // Start location tracker
+        locationTracker = new LocationTracker(appContext);
+        locationTracker.startLocation();
 
         // Initialize the situation model
-        situationModel = new SituationModel(canvasView);
+        situationModel = new SituationModel(canvasView, locationTracker);
+    }
+
+    private void checkPermissions() {
+        String[] requiredPermissions = {
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        };
+
+        boolean gotAllPermissions = true;
+        for (String permission : requiredPermissions) {
+            if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                gotAllPermissions = false;
+            }
+        }
+
+        if (gotAllPermissions) {
+            log("System resource permissions OK");
+        }
+        else {
+            log("Requesting additional system resource permissions");
+            ActivityCompat.requestPermissions(this, requiredPermissions, REQUEST_ALL_PERMISSIONS);
+        }
     }
 
 
@@ -160,5 +195,27 @@ public class MainActivity extends AppCompatActivity {
             paint.setTextSize(40);
             canvas.drawText("Testing...", 128, 512, paint);
         }
+    }
+
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_ALL_PERMISSIONS: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    log("All permissions granted");
+                } else {
+                    log("All permissions denied");
+                }
+                return;
+            }
+        }
+    }
+
+    private void log(String message) {
+        System.out.println("[MainActivity] "+message);
     }
 }

@@ -22,15 +22,28 @@ class SituationModel {
     private long timeUntilNextTick;
     private float dt = tickInterval/1000.0f;
 
+    private float positionUpdateTimer = 0;
+    private float positionUpdateInterval = 2.0f; // in s
+
     private Handler tickingHandler = new Handler();
     private boolean isTicking = false;
     private View canvasView; // The view which the situation model should invalidate when a redraw is needed
+    private LocationTracker locationTracker;
     private MapGrid mapGrid = new MapGrid(256f,512f,45f);
 
     private Runnable tick = new Runnable() {
         public void run() {
 
+            // Run some kinetics
             mapGrid.orientation += 15f*dt;
+
+            // Communicate with LocationTracker
+            positionUpdateTimer += dt;
+            if (positionUpdateTimer > positionUpdateInterval) {
+                positionUpdateTimer = 0;
+
+                log("Current position: "+locationTracker.getCurrentPositionCoordinates());
+            }
 
             // Check if any drawable things have been created or removed since last tick
             DrawableThing.updateInstanceLists();
@@ -38,6 +51,7 @@ class SituationModel {
             // Schedule a redraw for the associated view
             canvasView.invalidate();
 
+            // END OF TICK
             // Calculate and regulate the time to wait until next tick,
             // trying to keep the tick interval constant regardless of load
             tickEndTime = System.currentTimeMillis();
@@ -53,8 +67,9 @@ class SituationModel {
     };
 
 
-    SituationModel(View canvasView) {
+    SituationModel(View canvasView, LocationTracker locationTracker) {
         this.canvasView = canvasView;
+        this.locationTracker = locationTracker;
     }
 
     void setTickInterval(long newInterval) {
@@ -83,5 +98,9 @@ class SituationModel {
             System.out.println("Tried to stop SituationModel ticker, but it has already been stopped");
         }
         isTicking = false;
+    }
+
+    private void log(String message) {
+        System.out.println("[SituationModel] "+message);
     }
 }
