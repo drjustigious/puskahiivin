@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Start location tracker
         locationTracker = new LocationTracker(appContext);
-        locationTracker.startLocation();
+        locationTracker.restartLocation();
 
         // Initialize the situation model
         situationModel = new SituationModel(canvasView, locationTracker);
