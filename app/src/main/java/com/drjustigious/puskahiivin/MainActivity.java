@@ -1,13 +1,18 @@
 package com.drjustigious.puskahiivin;
 
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -17,6 +22,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,12 +67,8 @@ public class MainActivity extends AppCompatActivity {
         paint = new Paint();
         paint.setAntiAlias(true);
 
-        // Start location tracker
-        locationTracker = new LocationTracker(appContext);
-        locationTracker.restartLocation();
-
         // Initialize the situation model
-        situationModel = new SituationModel(canvasView, locationTracker);
+        situationModel = new SituationModel(canvasView);
     }
 
     private void checkPermissions() {
@@ -96,6 +98,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         // The activity loses focus
         super.onStop();
+
+        if (mServiceBound) {
+            unbindService(mServiceConnection);
+            mServiceBound = false;
+        }
+
         situationModel.stopTicking();
     }
 
@@ -104,8 +112,35 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         // The activity (re)gains focus
         super.onStart();
+
+        Intent intent = new Intent(this, LocationTracker.class);
+        startService(intent);
+        bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+
         situationModel.startTicking();
     }
+
+    boolean mServiceBound = false;
+
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mServiceBound = false;
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            LocationTracker.LocalBinder myBinder = (LocationTracker.LocalBinder) service;
+            locationTracker = myBinder.getService();
+            locationTracker.setContext(appContext);
+            locationTracker.restartLocation();
+
+            situationModel.setLocationTracker(locationTracker);
+
+            mServiceBound = true;
+            log("Bound to location tracker service");
+        }
+    };
 
 
     @Override

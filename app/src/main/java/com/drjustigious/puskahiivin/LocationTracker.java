@@ -7,25 +7,20 @@ import android.location.GnssStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.widget.Toast;
 
 public class LocationTracker  extends Service implements LocationListener {
 
-    private final Context mContext;
+    private final int NOTIFICATION = 1111;
+
+    private Context mContext = null;
     private static final long MIN_DISTANCE_BETWEEN_LOCATIONS = 5; // in meters
     private static final long LOCATION_INTERVAL_REALTIME = 500; // milliseconds
     private static final long LOCATION_INTERVAL_BACKGROUND = 20*1000; // milliseconds
 
-    public enum LocationInterval {
-        Realtime,
-        Background
-    }
-
-
-    private boolean gpsLocationEnabled = false;
-    private boolean networkLocationEnabled = false;
-    private boolean locationAvailable = false;
     private String locationProvider = null;
 
     private static long locationInterval = LOCATION_INTERVAL_REALTIME;
@@ -36,8 +31,31 @@ public class LocationTracker  extends Service implements LocationListener {
     private GnssStatus.Callback satelliteStatusCallback;
     private GnssStatus satelliteStatus;
 
+
     public LocationTracker(Context context) {
         this.mContext = context;
+    }
+
+    public LocationTracker(){
+        super();
+    }
+
+    public void setContext(Context context) {
+        this.mContext = context;
+    }
+
+    private final IBinder mBinder = new LocalBinder();
+
+    public class LocalBinder extends Binder {
+        LocationTracker getService() {
+            return LocationTracker.this;
+        }
+    }
+
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return mBinder;
     }
 
     public void restartLocation() {
@@ -116,6 +134,23 @@ public class LocationTracker  extends Service implements LocationListener {
     }
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
+    }
+
+    @Override
+    public void onCreate() {
+    }
+
+
+
+    @Override
+    public void onDestroy() {
+        // Tell the user we stopped
+        Toast.makeText(this, R.string.locationTrackerStopped, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
     public void onLocationChanged(Location newLocation) {
         currentLocation = newLocation;
         log("New latitude:  "+newLocation.getLatitude());
@@ -141,11 +176,6 @@ public class LocationTracker  extends Service implements LocationListener {
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
         log("Provider "+provider+" status changed to "+status);
-    }
-
-    @Override
-    public IBinder onBind(Intent arg0) {
-        return null;
     }
 
     private void log(String message) {

@@ -42,7 +42,9 @@ class SituationModel {
             if (positionUpdateTimer > positionUpdateInterval) {
                 positionUpdateTimer = 0;
 
-                log("Current position: "+locationTracker.getCurrentPositionCoordinates());
+                if (locationTracker != null) {
+                    log("Current position: "+locationTracker.getCurrentPositionCoordinates());
+                }
             }
 
             // Check if any drawable things have been created or removed since last tick
@@ -67,9 +69,13 @@ class SituationModel {
     };
 
 
-    SituationModel(View canvasView, LocationTracker locationTracker) {
+    SituationModel(View canvasView) {
         this.canvasView = canvasView;
         this.locationTracker = locationTracker;
+    }
+
+    public void setLocationTracker(LocationTracker newLocationTracker) {
+        locationTracker = newLocationTracker;
     }
 
     void setTickInterval(long newInterval) {

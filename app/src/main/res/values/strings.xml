@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">Puskahiivin</string>
     <string name="action_settings">Settings</string>
+    <string name="locationTrackerStarted">Location tracker started</string>
+    <string name="locationTrackerStopped">Location tracker stopped</string>
+    <string name="locationTrackerConnected">Location tracker connected</string>
+    <string name="locationTrackerDisconnected">Location tracker disconnected</string>
+    <string name="locationTracker">Location tracker</string>
 </resources>
